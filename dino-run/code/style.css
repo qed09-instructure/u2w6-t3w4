@@ -9,11 +9,18 @@ body {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
+  overflow: hidden;
+  color: #ACACAC;
+  background: #202124;
+  font-family: "Courier New", monospace;
 }
 
 .world {
+  --floor-offset: 9;
   overflow: hidden;
   position: relative;
+  image-rendering: pixelated;
+  background: #202124;
 }
 
 .score {
@@ -25,10 +32,15 @@ body {
 
 .start-screen {
   position: absolute;
-  font-size: 5vmin;
+  font-size: 4vmin;
+  font-weight: bold;
+  line-height: 1.25;
+  text-align: center;
+  white-space: pre;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+  z-index: 10;
 }
 
 .hide {
@@ -40,7 +52,7 @@ body {
   position: absolute;
   width: 300%;
   bottom: 0;
-  left: calc(var(--left) * 1%)
+  left: calc(var(--left) * 1%);
 }
 
 .dino {
@@ -48,12 +60,39 @@ body {
   position: absolute;
   left: 1%;
   height: 30%;
-  bottom: calc(var(--bottom) * 1%);
+  bottom: calc((var(--bottom) + var(--floor-offset)) * 1%);
+  image-rendering: pixelated;
+}
+
+.dino.ducking {
+  height: 18%;
+}
+
+.obstacle {
+  --left: 0;
+  --bottom: 0;
+  position: absolute;
+  left: calc(var(--left) * 1%);
+  bottom: calc((var(--bottom) + var(--floor-offset)) * 1%);
+  image-rendering: pixelated;
 }
 
 .cactus {
-  position: absolute;
-  left: calc(var(--left) * 1%);
-  height: 30%;
-  bottom: 0;
+  --height: 30;
+  height: calc(var(--height) * 1%);
+  width: auto;
+}
+
+.pterodactyl {
+  height: 15%;
+}
+
+.score.flash {
+  animation: score-flash 180ms steps(2, end) 3;
+}
+
+@keyframes score-flash {
+  50% {
+    opacity: 0;
+  }
 }
