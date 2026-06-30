@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "checkJs": true,
+    "target": "ESNext",
+    "module": "Preserve",
+    "paths": {
+      "stick-*": ["./scripts/*.js"]
+    }
+  },
+  "include": ["./*.js", "./scripts/*.js"]
+}

@@ -1,0 +1,1495 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width">
+  <title>Canvas Layering</title>
+
+  <link rel="stylesheet" href="../../../styles/main.css">
+
+  <style>
+    h1 {
+      text-align: center;
+      letter-spacing: -.03em;
+      background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+      background-clip: text;
+      color: transparent;
+      margin-bottom: 2rem;
+    }
+
+    h2 {
+      font-weight: 600;
+      line-height: 1.4;
+      letter-spacing: -.03em;
+      padding-bottom: .5rem;
+      border-bottom: 2px solid #e5e7eb;
+      margin-bottom: 1.5rem;
+    }
+
+    h3 {
+      font-weight: 500;
+      color: #3730a3;
+      margin-top: 2rem;
+    }
+
+    :is(.section, [class|="box"])>h3:first-child {
+      margin-top: 1.4rem;
+    }
+
+    figure {
+      justify-items: center;
+      margin: 0;
+    }
+
+    figcaption {
+      color: #666;
+      font-style: italic;
+    }
+
+    img {
+      max-width: 100%;
+      border: 1px dashed;
+    }
+  </style>
+
+  <script type="importmap">
+    {
+      "imports": {
+        "chatbot": "../../../scripts/chatbot.js",
+        "copy-btn": "../../../scripts/copy-btn.js",
+        "fit-iframe": "../../../scripts/fit-iframe.js",
+        "format-code": "../../../scripts/format-code.js",
+        "show-hide": "../../../scripts/show-hide.js",
+        "bounce-css": "../../../styles/bounce.css",
+        "copy-btn-css": "../../../styles/copy-btn.css"
+      }
+    }
+  </script>
+
+  <script type="module" src="../../../scripts/main.js"></script>
+</head>
+
+<body>
+  <h1>Canvas Layering</h1>
+
+  <h3 class="tag-green" style="margin-block: 2em 0">Game introduction example for your assessment task</h3>
+  <section class="section box-aqua">
+    <h2>What is Frogger?</h2>
+    <p>In Frogger, players control a frog who must cross a busy road and a hazardous river to reach its home on the
+      other side. It sounds simple, but the path is filled with dangers! This game captivates players with its
+      simple yet challenging gameplay.</p>
+
+    <h2>Gameplay Mechanics</h2>
+    <p>The core gameplay of Frogger involves navigating the frog, one hop at a time, through multiple lanes of
+      traffic and a river teeming with logs and turtles.</p>
+
+    <h3>Controls</h3>
+    <p>The frog can be moved in four directions:</p>
+    <ul>
+      <li><strong>Up:</strong> Hops forward into the next lane or onto an object in the river.</li>
+      <li><strong>Down:</strong> Hops backward.</li>
+      <li><strong>Left:</strong> Hops to the left.</li>
+      <li><strong>Right:</strong> Hops to the right.</li>
+    </ul>
+    <p>Each hop moves the frog a fixed distance.</p>
+
+    <h3>Objective</h3>
+    <p>The primary goal is to guide five frogs, one by one, to their homes (lily pads or logs) at the top of the
+      screen. You must avoid:</p>
+    <ul>
+      <li><strong>On the Road:</strong> Cars, trucks, and buses. Getting hit means losing a life.</li>
+      <li><strong>In the River:</strong> Drowning by falling into the water. You must land on logs or the backs of
+        turtles. Be careful, as some turtles may submerge!</li>
+      <li>Running out of time for each frog.</li>
+    </ul>
+    <p>Bonus points can be earned by collecting flies that occasionally appear in the homes or by escorting a lady
+      frog.</p>
+  </section>
+
+  <section class=" section">
+    <h4 class="text-center">Project File Structure & Assets</h4>
+    <div style="display: flex; align-items: center; gap: 1.5em">
+      <pre>
+<code class="language-html">frogger/
+  ├── img/
+  │    ├── background-lvl2.png
+  │    ├── background-water.png
+  │    ├── cars.png
+  │    ├── collisions.png
+  │    ├── frog-spritesheet.png
+  │    ├── grass-2.png
+  │    ├── log.png
+  │    └── turtles.png
+  ├── scripts/
+  │    ├── frogger.js
+  │    ├── obstacles.js
+  │    └── particles.js
+  ├── app.js
+  ├── index.html
+  └── style.css
+</code></pre>
+      <figure>
+        <img src="./code/img/frog-spritesheet.png" id="hero-1" style="height: 360px">
+        <figcaption>frog-spritesheet.png</figcaption>
+      </figure>
+      <figure>
+        <img src="./code/img/turtles.png" id="hero-1" style="height: 360px">
+        <figcaption>turtles.png</figcaption>
+      </figure>
+    </div>
+    <div style="display: flex; align-items: center; gap: 1.5em; margin-top: 1em">
+      <figure>
+        <img src="./code/img/background-water.png" id="background-level-1">
+        <figcaption>background-water.png</figcaption>
+      </figure>
+      <figure>
+        <img src="./code/img/background-lvl2.png" id="background-level-1">
+        <figcaption>background-lvl2.png</figcaption>
+      </figure>
+    </div>
+    <div style="display: flex; align-items: flex-start; gap: 1.5em; margin-top: 1.5em">
+      <figure>
+        <img src="./code/img/grass-2.png" id="background-level-1">
+        <figcaption>grass-2.png</figcaption>
+      </figure>
+      <div>
+        <figure>
+          <img src="./code/img/cars.png" id="background-level-1">
+          <figcaption>cars.png</figcaption>
+        </figure>
+        <div style="display: flex; align-items: center; gap: 1.5em; margin-top: 1.5em">
+          <figure>
+            <img src="./code/img/log.png" id="background-level-1">
+            <figcaption>log.png</figcaption>
+          </figure>
+          <figure>
+            <img src="./code/img/collisions.png" id="background-level-1">
+            <figcaption>collisions.png</figcaption>
+          </figure>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>HTML</h2>
+    <p>This is the main HTML file that structures the web page and loads our game.</p>
+    <h4 class="tag-green" style="margin-bottom: 0">index.html</h4>
+    <pre style="margin-top: 0">
+<code class="language-html">&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+
+&lt;head&gt;
+  &lt;meta charset="UTF-8"&gt;
+  &lt;meta name="viewport" content="width=device-width"&gt;
+  &lt;title&gt;Frogger&lt;/title&gt;
+  &lt;link rel="stylesheet" href="style.css"&gt;
+&lt;/head&gt;
+
+&lt;body&gt;
+  &lt;div class="wrapper"&gt;
+    &lt;canvas id="canvas1"&gt;&lt;/canvas&gt;
+    &lt;canvas id="canvas2"&gt;&lt;/canvas&gt;
+    &lt;canvas id="canvas3"&gt;&lt;/canvas&gt;
+    &lt;canvas id="canvas4"&gt;&lt;/canvas&gt;
+  &lt;/div&gt;
+
+  &lt;script type="module" src="app.js"&gt;&lt;/script&gt;
+&lt;/body&gt;
+
+&lt;/html&gt;</code></pre>
+
+    <article class="box-grey">
+      <h4 class="tag-blue" style="margin-left: -10px">&lt;div class="wrapper"&gt; ... &lt;/div&gt;</h4>
+      <p>This <code>div</code> element acts as a container for our game canvases. The class <code>wrapper</code> will
+        be used in <code>style.css</code> to style this container (e.g., set its size, position, and background).</p>
+
+      <h4><code>&lt;canvas id="canvas1"&gt;&lt;/canvas&gt;</code> (and <code>canvas2</code>, <code>canvas3</code>,
+        <code>canvas4</code>)
+      </h4>
+      <p>These are HTML5 <code>&lt;canvas&gt;</code> elements. We use JavaScript to draw graphics on these canvases.
+        Each canvas has a unique <code>id</code> so we can target it with JavaScript. They are layered on top of each
+        other using CSS to create the game's visual depth.</p>
+    </article>
+
+    <article class="box-grey">
+      <h4 class="tag-blue" style="margin-left: -10px">&lt;script type="module" src="app.js"&gt;&lt;/script&gt;</h4>
+      <p>This line includes our main JavaScript file, <code>app.js</code>.
+        The <code>type="module"</code> attribute is important because it allows us to use modern JavaScript features
+        like <code>import</code> and <code>export</code> to organise our code into multiple files (modules). This
+        script
+        tag is usually placed at the end of the body so that the HTML structure is loaded before the script tries to
+        interact with it.</p>
+    </article>
+
+    <div class="box-aqua">
+      <p>This game uses multiple HTML <code>&lt;canvas&gt;</code> elements layered on top of each other. Think of them
+        as transparent sheets.
+      <ul>
+        <li><code>canvas1</code> (ctx1): Used for logs, turtles, and water ripples. This is behind the frog.</li>
+        <li><code>canvas2</code> (ctx2): Used for the road background and cars. This is also behind the frog.</li>
+        <li><code>canvas3</code> (ctx3): Used for the Frogger character and dust particles from its movement. This is
+          the "main character" layer.</li>
+        <li><code>canvas4</code> (ctx4): Used for the grass foreground and the scoreboard. This is on top of
+          everything.
+        </li>
+      </ul>
+      This layering allows different game elements to be drawn and cleared independently without affecting others.
+      </p>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>CSS</h2>
+    <p>This file contains the CSS rules to style our HTML elements, particularly the game area.</p>
+    <h4 class="tag-green" style="margin-bottom: 0">style.css</h4>
+    <pre style="margin-top: 0">
+<code class="language-css">.wrapper {
+  background: url('./img/background-water.png');
+  width: 600px;
+  height: 600px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  border: 5px solid;
+}
+
+canvas {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+}</code></pre>
+
+    <article class="box-grey">
+      <h4 class="tag-blue" style="margin-left: -10px">.wrapper { ... }</h4>
+      <p>This CSS rule targets the HTML element with the class <code>wrapper</code> (our main game container).</p>
+      <p><code>background: url(' . /img/background-water.png')</code>: Sets a background image for the wrapper. This
+        image will be visible behind the canvases if they are transparent or don't cover the entire area.</p>
+      <p><code>position: absolute</code>: This allows us to position the wrapper precisely on the page.</p>
+      <p><code>width: 600px</code> and <code>height: 600px</code>: Defines the dimensions of our game area.</p>
+      <p><code>top: 50%</code> and <code>left: 50%</code>: Positions the top-left corner of the wrapper at the center
+        of the page.</p>
+      <p><code>translate: -50% -50%</code>: This is a common trick used with <code>top: 50%</code> and
+        <code>left: 50%</code> to truly center an element. It shifts the element back by half of its own width and
+        height, ensuring its center aligns with the page's center.
+      </p>
+      <p><code>border: 5px solid</code>: Adds a 5-pixel wide solid border around the game area.</p>
+    </article>
+
+    <article class="box-grey">
+      <h4 class="tag-blue" style="margin-left: -10px">canvas { ... }</h4>
+      <p>This CSS rule targets all <code>&lt;canvas&gt</code> elements on the page.</p>
+      <p><code>width: 100%</code> and <code>height: 100%</code>: Makes each canvas take up the full width and height
+        of its parent container (the <code>.wrapper</code> div). So, each canvas will be 600px by 600px.</p>
+      <p><code>position: absolute</code>: This is key for layering. It takes the canvases out of the normal document
+        flow.</p>
+      <p><code>top: 0</code> and <code>left: 0</code>: Positions each canvas at the top-left corner of their parent
+        (the
+        <code>.wrapper</code>). Since they all have this, they will stack directly on top of each other.
+      </p>
+    </article>
+  </section>
+
+  <section class="section">
+    <h2>1. Main Game File ( app.js )</h2>
+    <p>This is the main JavaScript file that orchestrates the game. It sets up the game, handles user input, and runs
+      the game loop.</p>
+    <pre>
+<code class="language-js">import { Frogger } from './scripts/frogger.js'
+import { handleParticles, handleRipples } from './scripts/particles.js'
+import { initObstacles, handleObstacles } from './scripts/obstacles.js'
+
+export const canvas1 = document.getElementById("canvas1")
+export const canvas2 = document.getElementById("canvas2")
+export const canvas3 = document.getElementById("canvas3")
+export const canvas4 = document.getElementById("canvas4")
+
+export const ctx1 = canvas1.getContext("2d")
+export const ctx2 = canvas2.getContext("2d")
+export const ctx3 = canvas3.getContext("2d")
+export const ctx4 = canvas4.getContext("2d")
+
+canvas1.width = 600
+canvas2.width = 600
+canvas3.width = 600
+canvas4.width = 600
+
+canvas1.height = 600
+canvas2.height = 600
+canvas3.height = 600
+canvas4.height = 600
+
+// global variables
+export const keys = []
+let score = 0
+let collisionCount = 0
+export let frame = 0
+export let gameSpeed = 1
+initObstacles()
+
+// Instantiate Frogger after canvas3 is initialised
+export const frogger = new Frogger()
+
+// images
+const backgroundLvl2 = new Image()
+backgroundLvl2.src = 'img/background-lvl2.png'
+const grass = new Image()
+grass.src = 'img/grass-2.png'
+
+// Utilities
+function animate() {
+  ctx1.clearRect(0, 0, canvas1.width, canvas1.height)
+  ctx2.clearRect(0, 0, canvas2.width, canvas2.height)
+  ctx3.clearRect(0, 0, canvas3.width, canvas3.height)
+  ctx4.clearRect(0, 0, canvas4.width, canvas4.height)
+
+  handleRipples()
+  ctx2.drawImage(backgroundLvl2, 0, 0, canvas2.width, canvas2.height)
+  handleParticles()
+  frogger.update()
+  frogger.draw()
+
+  handleObstacles()
+  handleScoreBoard()
+  ctx4.drawImage(grass, 0, 0, canvas4.width, canvas4.height)
+  frame++
+
+  requestAnimationFrame(animate)
+}
+requestAnimationFrame(animate)
+
+window.addEventListener('keydown', e =&gt; {
+  if (e.key === 'ArrowUp' || e.key.toLowerCase() === 'w') {
+    if (keys.indexOf('UP') &gt; -1) return
+    keys.unshift('UP')
+    frogger.jump()
+  }
+  if (e.key === 'ArrowDown' || e.key.toLowerCase() === 's') {
+    if (keys.indexOf('DOWN') &gt; -1) return
+    keys.unshift('DOWN')
+    frogger.jump()
+  }
+  if (e.key === 'ArrowLeft' || e.key.toLowerCase() === 'a') {
+    if (keys.indexOf('LEFT') &gt; -1) return
+    keys.unshift('LEFT')
+    frogger.jump()
+  }
+  if (e.key === 'ArrowRight' || e.key.toLowerCase() === 'd') {
+    if (keys.indexOf('RIGHT') &gt; -1) return
+    keys.unshift('RIGHT')
+    frogger.jump()
+  }
+})
+
+window.addEventListener('keyup', e =&gt; {
+  if (e.key === 'ArrowUp' || e.key.toLowerCase() === 'w') {
+    const index = keys.indexOf('UP')
+    if (index === -1) return
+    keys.splice(index, 1)
+    frogger.moving = false
+    frogger.frameX = 0
+  }
+  if (e.key === 'ArrowDown' || e.key.toLowerCase() === 's') {
+    const index = keys.indexOf('DOWN')
+    if (index === -1) return
+    keys.splice(index, 1)
+    frogger.moving = false
+    frogger.frameX = 0
+  }
+  if (e.key === 'ArrowLeft' || e.key.toLowerCase() === 'a') {
+    const index = keys.indexOf('LEFT')
+    if (index === -1) return
+    keys.splice(index, 1)
+    frogger.moving = false
+    frogger.frameX = 0
+  }
+  if (e.key === 'ArrowRight' || e.key.toLowerCase() === 'd') {
+    const index = keys.indexOf('RIGHT')
+    if (index === -1) return
+    keys.splice(index, 1)
+    frogger.moving = false
+    frogger.frameX = 0
+  }
+})
+
+export function scored() {
+  score++
+  gameSpeed += 0.05
+  frogger.x = canvas3.width / 2 - frogger.width / 2
+  frogger.y = canvas3.height - frogger.height - 40
+}
+
+function handleScoreBoard() {
+  ctx4.font = '15px Verdana'
+  ctx4.strokeText('Score', 265, 15)
+
+  ctx4.font = '60px Verdana'
+  ctx4.fillText(score, 270, 65)
+
+  ctx4.font = '15px Verdana'
+  ctx4.strokeText(`Collisions: ${collisionCount}`, 10, 175)
+  ctx4.strokeText(`Game Speed: ${gameSpeed.toFixed(1)}`, 10, 195)
+}
+
+// collision detection between two rectangles
+export function collision(first, second) {
+  return !(
+    first.x &gt; second.x + second.width ||
+    first.x + first.width &lt; second.x ||
+    first.y &gt; second.y + second.height ||
+    first.y + first.height &lt; second.y
+  )
+}
+
+export function resetGame() {
+  frogger.x = canvas3.width / 2 - frogger.width / 2
+  frogger.y = canvas3.height - frogger.height - 40
+  score = 0
+  collisionCount++
+  gameSpeed = 1
+}</code></pre>
+
+    <article class="box-grey">
+      <h4 class="tag-blue" style="margin-left: -10px">Imports</h4>
+      <p><code>import { Frogger } from ' . /scripts/frogger.js'</code>: Imports the <code>Frogger</code> class from
+        the
+        <code>frogger.js</code> file. This class will define our player character.
+      </p>
+      <p><code>import { handleParticles, handleRipples } from ' . /scripts/particles.js'</code>: Imports functions for
+        managing visual effects like dust and water ripples from <code>particles.js</code>.</p>
+      <p><code>import { initObstacles, handleObstacles } from ' . /scripts/obstacles.js'</code>: Imports functions for
+        creating and managing game obstacles (like cars and logs) from <code>obstacles.js</code>.</p>
+    </article>
+
+    <article class="box-grey">
+      <h4 class="tag-blue" style="margin-left: -10px">Canvas Setup</h4>
+      <p><code>export const canvas1 = document.getElementById("canvas1")</code> (and similarly for
+        <code>canvas2</code>, <code>canvas3</code>, <code>canvas4</code>): These lines get references to the HTML
+        <code>&lt;canvas&gt;</code> elements we defined in <code>index.html</code> using their IDs. The
+        <code>export</code> keyword makes these canvas variables available to other JavaScript modules (files) if they
+        need to draw on them. <code>const</code> means these variables cannot be reassigned.
+      </p>
+      <p><code>export const ctx1 = canvas1.getContext("2d")</code> (and similarly for <code>ctx2</code>,
+        <code>ctx3</code>, <code>ctx4</code>): For each canvas, we get its "2D rendering context". This context object
+        provides the methods and properties for drawing shapes, text, images, and other objects onto the canvas. We
+        also <code>export</code> these contexts.
+      </p>
+      <p><code>canvas1.width = 600</code> (and for height, and for other canvases): These lines set the internal
+        resolution (drawing surface size) of each canvas to 600x600 pixels. This is important because the canvas has
+        two sizes: the size it's displayed on the screen (set by CSS) and the size of its actual drawing buffer.</p>
+    </article>
+
+    <article class="box-grey">
+      <h4 class="tag-blue" style="margin-left: -10px">Global Variables</h4>
+      <p><code>export const keys = [ ]</code>: An array that will store which arrow keys (or WASD) are currently
+        being pressed by the player. <code>export</code> makes it accessible from other modules (e.g.,
+        <code>frogger.js</code> to check for movement commands).
+      </p>
+      <p><code>let score = 0</code>: A variable to keep track of the player's score. <code>let</code> means its value
+        can change.</p>
+      <p><code>let collisionCount = 0</code>: A variable to count how many times the player has collided and reset.
+      </p>
+      <p><code>export let frame = 0</code>: A counter that increments with each animation frame. This can be used for
+        timing animations or game events. <code>export</code> allows other modules to access it.</p>
+      <p><code>export let gameSpeed = 1</code>: A multiplier for game speed. This can be increased to make the game
+        harder. <code>export</code> allows obstacles to use this speed.</p>
+      <p><code>initObstacles( )</code>: Calls the function (imported from <code>obstacles.js</code>) to create the
+        initial set of obstacles when the game starts.</p>
+    </article>
+
+    <article class="box-grey">
+      <h4 class="tag-blue" style="margin-left: -10px">Frogger Instantiation</h4>
+      <p><code>export const frogger = new Frogger( )</code>: Creates a new instance of the <code>Frogger</code> class
+        (our player character) and stores it in the <code>frogger</code> variable. This is done after the canvases are
+        initialized, as the <code>Frogger</code> class might need access to canvas dimensions. <code>export</code>
+        allows other modules (like <code>obstacles.js</code> for collision detection) to access the frogger object.
+      </p>
+    </article>
+
+    <article class="box-grey">
+      <h4 class="tag-blue" style="margin-left: -10px">Images</h4>
+      <p><code>const backgroundLvl2 = new Image( )</code>: Creates a new HTML <code>Image</code> object to hold the
+        background image for level 2.</p>
+      <p><code>backgroundLvl2.src = 'img/background-lvl2.png'</code>: Sets the source path for the image. The browser
+        will start loading this image asynchronously.</p>
+      <p><code>const grass = new Image( )</code> and <code>grass.src = 'img/grass-2.png'</code>: Similarly, creates
+        and loads an image for the grass foreground.</p>
+    </article>
+
+    <article class="box-grey">
+      <h4 class="tag-blue" style="margin-left: -10px">animate( )</h4>
+      <p>This function is the heart of the game. It's called repeatedly to update game state and redraw the screen,
+        creating animation.</p>
+      <p><code>ctx1.clearRect(0, 0, canvas1.width, canvas1.height)</code> (and for other contexts): Clears the entire
+        area of each canvas on every frame. This is necessary because we are redrawing everything in new positions. If
+        we didn't clear, we'd see trails of old drawings.</p>
+      <p><code>handleRipples( )</code>: Calls the function from <code>particles.js</code> to draw and update any
+        water ripples on their designated canvas (likely <code>ctx1</code>).</p>
+      <p><code>ctx2.drawImage(backgroundLvl2, 0, 0, canvas2.width, canvas2.height)</code>: Draws the
+        <code>backgroundLvl2</code> image onto <code>canvas2</code>, covering its entire area.
+      </p>
+      <p><code>handleParticles( )</code>: Calls the function from <code>particles.js</code> to draw and update dust
+        particles (likely on <code>ctx3</code> where the frog is).</p>
+      <p><code>frogger.update( )</code>: Calls the <code>update</code> method of our <code>frogger</code> object.
+        This method will handle frogger's movement based on player input.</p>
+      <p><code>frogger.draw( )</code>: Calls the <code>draw</code> method of our <code>frogger</code> object to
+        render the frog on its canvas (<code>ctx3</code>).</p>
+      <p><code>handleObstacles( )</code>: Calls the function from <code>obstacles.js</code>. This will update
+        obstacle positions, draw them, and check for collisions between frogger and obstacles.</p>
+      <p><code>handleScoreBoard( )</code>: Calls a local function to draw the score, collision count, and game speed
+        on the screen (likely on <code>ctx4</code>).</p>
+      <p><code>ctx4.drawImage(grass, 0, 0, canvas4.width, canvas4.height)</code>: Draws the grass image onto
+        <code>canvas4</code>, which acts as a foreground layer.
+      </p>
+      <p><code>frame++</code>: Increments the global frame counter.</p>
+      <p><code>requestAnimationFrame(animate)</code>: This is a crucial browser API. It tells the browser that you
+        wish to perform an animation and requests that the browser call the specified function (<code>animate</code>
+        in this case) to update the animation before the next repaint. This creates a smooth, efficient animation
+        loop, typically running at 60 frames per second.</p>
+      <p><code>requestAnimationFrame(animate)</code> (outside the function): This line starts the game loop for the
+        very first time when the script loads.</p>
+    </article>
+
+    <article class="box-grey">
+      <h4 class="tag-blue" style="margin-left: -10px">Event Listeners for Keyboard Input</h4>
+      <p><code>window.addEventListener('keydown', e =&gt; { ... })</code>: Attaches an event listener to the browser
+        window that listens for the <code>keydown</code> event (when a key is pressed down).</p>
+      <p>Inside the <code>keydown</code> listener:</p>
+      <p><code>if (e.key === 'ArrowUp' || e.key.toLowerCase( ) === 'w') { ... }</code>: Checks if the pressed key is
+        the Up Arrow key or 'w' (case-insensitive).</p>
+      <p><code>if (keys.indexOf('UP') &gt; -1) return</code>: Checks if 'UP' is already in the <code>keys</code>
+        array. If it is, it means the key is already registered as pressed (e.g., being held down), so it does nothing
+        to avoid duplicate entries or actions. (Note: <code>unshift</code> handles this implicitly for adding, but
+        this check prevents re-calling <code>frogger.jump( )</code> unnecessarily if the game logic were different).
+      </p>
+      <p><code>keys.unshift('UP')</code>: Adds the string 'UP' to the beginning of the <code>keys</code> array.
+        <code>unshift</code> is used so that <code>keys[0]</code> always represents the most recently pressed
+        direction key, which is useful for determining frogger's orientation.
+      </p>
+      <p><code>frogger.jump( )</code>: Calls the <code>jump</code> method on the <code>frogger</code> object. This
+        method likely handles the visual animation of the frog preparing to move or hopping.</p>
+      <p>Similar blocks exist for 'ArrowDown'/'s', 'ArrowLeft'/'a', and 'ArrowRight'/'d'.</p>
+
+      <p><code>window.addEventListener('keyup', e =&gt; { ... })</code>: Attaches an event listener for the
+        <code>keyup</code> event (when a key is released).
+      </p>
+      <p>Inside the <code>keyup</code> listener:</p>
+      <p><code>if (e.key === 'ArrowUp' || e.key.toLowerCase( ) === 'w') { ... }</code>: Checks if the released key was
+        Up Arrow or 'w'.</p>
+      <p><code>const index = keys.indexOf('UP')</code>: Finds the position of 'UP' in the <code>keys</code> array.
+      </p>
+      <p><code>if (index === -1) return</code>: If 'UP' is not found, do nothing.</p>
+      <p><code>keys.splice(index, 1)</code>: Removes one element at the found <code>index</code> from the
+        <code>keys</code> array. This effectively "unregisters" the key press.
+      </p>
+      <p><code>frogger.moving = false</code>: Sets the <code>moving</code> property of the frogger to
+        <code>false</code>. This likely indicates that the frog has completed its current move action.
+      </p>
+      <p><code>frogger.frameX = 0</code>: Resets the frog's animation frame (e.g., to a standing still sprite) when a
+        movement key is released.</p>
+      <p>Similar blocks exist for the other direction keys.</p>
+    </article>
+
+    <article class="box-grey">
+      <h4 class="tag-blue" style="margin-left: -10px">scored( )</h4>
+      <p><code>export function scored( ) { ... }</code>: This function is called when the frog successfully reaches
+        the other side.</p>
+      <p><code>score++</code>: Increments the player's score.</p>
+      <p><code>gameSpeed += 0.05</code>: Increases the overall game speed slightly, making the game progressively
+        harder.</p>
+      <p><code>frogger.x = canvas3.width / 2 - frogger.width / 2</code> and
+        <code>frogger.y = canvas3.height - frogger.height - 40</code>: Resets the frogger's position back to the
+        starting point at the bottom-center of its canvas.
+      </p>
+    </article>
+
+    <article class="box-grey">
+      <h4 class="tag-blue" style="margin-left: -10px">handleScoreBoard( )</h4>
+      <p>This function is responsible for drawing the game's score and other information on the screen (specifically
+        on <code>ctx4</code>).</p>
+      <p><code>ctx4.font = '15px Verdana'</code>: Sets the font style and size for text.</p>
+      <p><code>ctx4.strokeText('Score', 265, 15)</code>: Draws the text "Score" (as an outline) at coordinates (265,
+        15) on <code>canvas4</code>.</p>
+      <p><code>ctx4.font = '60px Verdana'</code>: Changes the font size for drawing the actual score value.</p>
+      <p><code>ctx4.fillText(score, 270, 65)</code>: Draws the current value of the <code>score</code> variable
+        (filled text) at (270, 65).</p>
+      <p><code>ctx4.font = '15px Verdana'</code>: Resets font size for other info.</p>
+      <p><code>ctx4.strokeText(Collision: ${collisionCount}, 10, 175)</code>: Draws the number of collisions.</p>
+      <p><code>ctx4.strokeText(Game Speed: ${gameSpeed.toFixed(1)}, 10, 195)</code>: Draws the current game speed,
+        formatted to one decimal place using <code>toFixed(1)</code>.</p>
+    </article>
+
+    <article class="box-grey">
+      <h4 class="tag-blue" style="margin-left: -10px">collision( )</h4>
+      <p><code>export function collision(first, second) { ... }</code>: A utility function to detect collision between
+        two rectangular objects (<code>first</code> and <code>second</code>). Each object is expected to have
+        <code>x</code>, <code>y</code>, <code>width</code>, and <code>height</code> properties.
+      </p>
+      <p><code>return !( ... )</code>: The function returns <code>true</code> if there is a collision, and
+        <code>false</code> otherwise. The logic checks for conditions where the two rectangles do *not* overlap. If
+        none of these "no overlap" conditions are met, it means they must be overlapping.
+      </p>
+      <p><code>first.x > second.x + second.width</code>: True if <code>first</code> is entirely to the right of
+        <code>second</code>.
+      </p>
+      <p><code>first.x + first.width &lt; second.x</code>: True if <code>first</code> is entirely to the left of
+        <code>second</code>.
+      </p>
+      <p><code>first.y > second.y + second.height</code>: True if <code>first</code> is entirely below
+        <code>second</code>.
+      </p>
+      <p><code>first.y + first.height &lt; second.y</code>: True if <code>first</code> is entirely above
+        <code>second</code>.
+      </p>
+      <p>If any of these are true, there's no collision. The <code>!</code> (NOT operator) inverts this, so it returns
+        <code>true</code> only when all these "no overlap" conditions are false (i.e., there is an overlap).
+      </p>
+    </article>
+
+    <article class="box-grey">
+      <h4 class="tag-blue" style="margin-left: -10px">resetGame( )</h4>
+      <p><code>export function resetGame( ) { ... }</code>: This function is called when the frog collides with an
+        obstacle or drowns.</p>
+      <p><code>frogger.x = canvas3.width / 2 - frogger.width / 2</code> and
+        <code>frogger.y = canvas3.height - frogger.height - 40</code>: Resets the frog's position to the starting
+        point.
+      </p>
+      <p><code>score = 0</code>: Resets the player's score to zero.</p>
+      <p><code>collisionCount++</code>: Increments the count of collisions.</p>
+      <p><code>gameSpeed = 1</code>: Resets the game speed to its initial value.</p>
+    </article>
+  </section>
+
+  <section class="section">
+    <h2>2. Player Character ( ./scripts/frogger.js )</h2>
+    <p>This file defines the <code>Frogger</code> class, which controls the player character's behavior, appearance,
+      and movement.</p>
+    <pre>
+<code class="language-js">import { canvas3, ctx3, keys, scored } from '../app.js'
+import { grid } from './obstacles.js'
+
+const froggerSprite = new Image()
+froggerSprite.src = 'img/frog-spritesheet.png'
+
+export class Frogger {
+  constructor() {
+    this.spriteWidth = 250
+    this.spriteHeight = 250
+    this.width = this.spriteWidth / 5
+    this.height = this.spriteHeight / 5
+    this.x = canvas3.width / 2 - this.width / 2
+    this.y = canvas3.height - this.height - 40
+    this.moving = false
+    this.frameX = 0
+    this.frameY = 0
+  }
+  update() {
+    if (keys[0] === 'UP') {
+      if (this.moving === false) {
+        this.y -= grid
+        this.moving = true
+        this.frameY = 0
+      }
+    }
+    if (keys[0] === 'DOWN') {
+      if (
+        this.y &lt; canvas3.height - this.height * 2
+        &amp;&amp; this.moving === false
+      ) {
+        this.y += grid
+        this.moving = true
+        this.frameY = 3
+      }
+    }
+    if (keys[0] === 'LEFT') {
+      if (this.x &gt; this.width &amp;&amp; this.moving === false) {
+        this.x -= grid
+        this.moving = true
+        this.frameY = 2
+      }
+    }
+    if (keys[0] === 'RIGHT') {
+      if (
+        this.x &lt; canvas3.width - this.width * 2
+        &amp;&amp; this.moving === false
+      ) {
+        this.x += grid
+        this.moving = true
+        this.frameY = 1
+      }
+    }
+    if (this.y &lt; 0) scored()
+  }
+  draw() {
+    ctx3.drawImage(
+      froggerSprite,
+      this.frameX * this.spriteWidth,
+      this.frameY * this.spriteHeight,
+      this.spriteWidth,
+      this.spriteHeight,
+      this.x - 25,
+      this.y - 25,
+      this.width * 2,
+      this.height * 2
+    )
+  }
+  jump() {
+    if (this.moving === false) this.frameX = 1
+    else if (this.frameX === 1) this.frameX = 0
+  }
+}</code></pre>
+
+    <article class="box-grey">
+      <h4 class="tag-blue" style="margin-left: -10px">Imports</h4>
+      <p><code>import { canvas3, ctx3, keys, scored } from ' . . /app.js'</code>: Imports necessary variables and
+        functions from the main <code>app.js</code> file. <code>canvas3</code> and <code>ctx3</code> are used for
+        drawing the frog. <code>keys</code> is used to check player input. <code>scored</code> is called when the frog
+        reaches the goal. The <code> . . /</code> means "go up one directory" to find <code>app.js</code>.</p>
+      <p><code>import { grid } from ' . /obstacles.js'</code>: Imports the <code>grid</code> constant from
+        <code>obstacles.js</code>. This defines the size of each step the frogger takes.
+      </p>
+    </article>
+
+    <article class="box-grey">
+      <h4 class="tag-blue" style="margin-left: -10px">Sprite Loading</h4>
+      <p><code>const froggerSprite = new Image( )</code>: Creates a new <code>Image</code> object.</p>
+      <p><code>froggerSprite.src = 'img/frog-spritesheet.png'</code>: Sets the source for the frogger's spritesheet
+        image. A spritesheet is a single image containing multiple frames of an animation.</p>
+    </article>
+
+    <article class="box-grey">
+      <h4 class="tag-blue" style="margin-left: -10px">Frogger Class</h4>
+      <p><code>export class Frogger { ... }</code>: Defines a class named <code>Frogger</code>. The
+        <code>export</code> keyword allows this class to be imported and used in other files (like
+        <code>app.js</code>).
+      </p>
+    </article>
+
+    <article class="box-grey">
+      <h4 class="tag-blue" style="margin-left: -10px">constructor( )</h4>
+      <p>The constructor is a special method for creating and initializing an object created with a class.</p>
+      <p><code>this.spriteWidth = 250</code> and <code>this.spriteHeight = 250</code>: These define the width and
+        height of a single frame (one frog pose) within the <code>froggerSprite.png</code> image.</p>
+      <p><code>this.width = this.spriteWidth / 5</code> and <code>this.height = this.spriteHeight / 5</code>: These
+        calculate the actual width and height the frog will have on the game canvas. Here, the sprite is scaled down
+        by a factor of 5. So, the frog will be 50x50 pixels logically.</p>
+      <p><code>this.x = canvas3.width / 2 - this.width / 2</code>: Sets the initial horizontal (x) position of the
+        frog to the center of <code>canvas3</code>.</p>
+      <p><code>this.y = canvas3.height - this.height - 40</code>: Sets the initial vertical (y) position of the frog
+        near the bottom of <code>canvas3</code> (40 pixels from the very bottom edge, after accounting for its
+        height).</p>
+      <p><code>this.moving = false</code>: A boolean flag to track if the frog is currently in the middle of a move.
+        This prevents multiple moves from happening simultaneously.</p>
+      <p><code>this.frameX = 0;</code> and <code>this.frameY = 0</code>: These will be used to select which frame
+        from the spritesheet to draw. <code>frameX</code> typically cycles through animation frames (e.g., for a
+        jump), and <code>frameY</code> selects the row in the spritesheet corresponding to the frog's direction (up,
+        down, left, right).</p>
+    </article>
+
+    <article class="box-grey">
+      <h4 class="tag-blue" style="margin-left: -10px">update( )</h4>
+      <p>This method is called in each frame of the game loop (from <code>app.js</code>) to update the frog's state,
+        primarily its position based on key presses.</p>
+      <p><code>if (keys[0] === 'UP') { ... }</code>: Checks if the most recently pressed key (stored at
+        <code>keys[0]</code>) is 'UP'.
+      </p>
+      <p><code>if (this.moving === false) { ... }</code>: Ensures the frog only moves if it's not already in the
+        process of moving.</p>
+      <p><code>this.y -= grid</code>: Moves the frog up by one <code>grid</code> unit. (Y decreases as you go up in
+        canvas coordinates).</p>
+      <p><code>this.moving = true</code>: Sets the flag to indicate the frog is now moving.</p>
+      <p><code>this.frameY = 0</code>: Sets <code>frameY</code> to 0, which should correspond to the row in the
+        spritesheet showing the frog facing upwards.</p>
+      <p>Similar blocks handle 'DOWN', 'LEFT', and 'RIGHT' movements:</p>
+      <p>For 'DOWN': <code>if (this.y &lt; canvas3.height - this.height * 2 && this.moving === false) { ... }</code>
+        This includes a boundary check: <code>this.y &lt; canvas3.height - this.height * 2</code> ensures the frog
+        doesn't move off the bottom of the screen (or too far down). <code>this.frameY = 3</code> for the
+        downward-facing sprite.</p>
+      <p>For 'LEFT': <code>if (this.x &gt; this.width && this.moving === false) { ... }</code>
+        Boundary check: <code>this.x &gt; this.width</code> ensures the frog doesn't move too far left (allowing some
+        of its width to be visible). <code>this.frameY = 2</code> for the left-facing sprite.</p>
+      <p>For 'RIGHT': <code>if (this.x &lt; canvas3.width - this.width * 2 && this.moving === false) { ... }</code>
+        Boundary check: <code>this.x &lt; canvas3.width - this.width * 2</code> ensures the frog doesn't move too far
+        right. <code>this.frameY = 1</code> for the right-facing sprite.</p>
+      <p><code>if (this.y &lt; 0) scored( );</code>: If the frog's y-position goes above the top of the canvas
+        (<code>y &lt; 0</code>), it means the frog has successfully crossed. The <code>scored( )</code> function
+        (imported from <code>app.js</code>) is then called.</p>
+    </article>
+
+    <article class="box-grey">
+      <h4 class="tag-blue" style="margin-left: -10px">draw( )</h4>
+      <p>This method is responsible for drawing the frog on the canvas (<code>ctx3</code>).</p>
+      <p><code>ctx3.drawImage(...)</code>: This is the core canvas drawing command for images. It takes several
+        arguments:</p>
+      <p><code>froggerSprite</code>: The image object (our spritesheet) to draw from.</p>
+      <p><code>this.frameX * this.spriteWidth</code>: The x-coordinate of the top-left corner of the sub-rectangle
+        (the specific frame) to cut from the spritesheet.</p>
+      <p><code>this.frameY * this.spriteHeight</code>: The y-coordinate of the top-left corner of the sub-rectangle
+        from the spritesheet.</p>
+      <p><code>this.spriteWidth</code>: The width of the sub-rectangle (one frame) from the spritesheet.</p>
+      <p><code>this.spriteHeight</code>: The height of the sub-rectangle (one frame) from the spritesheet.</p>
+      <p><code>this.x - 25</code>: The x-coordinate on the canvas where the top-left corner of the drawn image should
+        be placed. The <code>-25</code> is an offset. Since the drawn image (<code>this.width * 2</code>,
+        <code>this.height * 2</code>) is larger than the frog's logical size, this offset helps center the larger
+        visual representation around the frog's logical <code>x, y</code> point.
+      </p>
+      <p><code>this.y - 25</code>: The y-coordinate on the canvas, with a similar offset.</p>
+      <p><code>this.width * 2</code>: The width the image should be drawn on the canvas. Here, it's drawn at twice its
+        logical width (50px * 2 = 100px).</p>
+      <p><code>this.height * 2</code>: The height the image should be drawn on the canvas (twice its logical height).
+      </p>
+      <p>This means the frog's logical hitbox might be 50x50, but it's drawn as a 100x100 image, which can make it
+        visually more appealing or easier to see.</p>
+    </article>
+
+    <article class="box-grey">
+      <h4 class="tag-blue" style="margin-left: -10px">jump( )</h4>
+      <p>This method is called when a movement key is pressed (from <code>app.js</code>). It controls the frog's
+        jumping animation frame.</p>
+      <p><code>if (this.moving === false) this.frameX = 1</code>: If the frog is not currently moving (i.e., it's
+        about to start a jump), set <code>this.frameX</code> to 1. This likely selects the "jump" or "mid-move" frame
+        from the spritesheet row determined by <code>this.frameY</code>.</p>
+      <p><code>else if (this.frameX === 1) this.frameX = 0</code>: If the frog *is* moving and its animation frame
+        <code>this.frameX</code> is already 1 (the jump frame), set it back to 0. This creates a simple two-frame
+        animation (e.g., frame 0 is idle, frame 1 is jump). This part might be related to ending the jump animation or
+        toggling between jump frames, though usually <code>moving</code> being true would mean the actual position
+        change has occurred in <code>update( )</code>, and keyup would reset <code>moving</code> and
+        <code>frameX</code>.
+      </p>
+      <p>Essentially, this <code>jump( )</code> method seems to primarily set the initial animation frame for the jump
+        when a key is first pressed. The <code>moving</code> flag is then set to <code>true</code> in the
+        <code>update( )</code> method when the actual movement occurs. The <code>keyup</code> event in
+        <code>app.js</code> resets <code>moving</code> to <code>false</code> and <code>frameX</code> to
+        <code>0</code>.
+      </p>
+    </article>
+  </section>
+
+  <section class="section">
+    <h2>3. Obstacles ( ./scripts/obstacles.js )</h2>
+    <p>This file defines the obstacles in the game (cars, logs, turtles), their behavior, and handles collision
+      detection with the frog.</p>
+    <pre>
+<code class="language-js">import {
+  canvas1,
+  ctx1,
+  ctx2,
+  ctx4,
+  frame,
+  gameSpeed,
+  collision,
+  resetGame
+} from '../app.js'
+
+import { frogger } from '../app.js'
+import { ripplesArray, Particle } from './particles.js'
+
+export const grid = 80
+const carsArray = []
+const logsArray = []
+
+let typeOfCars = 3
+let typeOfTurtles = 4
+let safe = false
+
+// images
+const turtle = new Image()
+turtle.src = 'img/turtles.png'
+const log = new Image()
+log.src = 'img/log.png'
+const car = new Image()
+car.src = 'img/cars.png'
+const collisions = new Image()
+collisions.src = 'img/collisions.png'
+
+class Obstacle {
+  constructor(x, y, width, height, speed, type) {
+    this.x = x
+    this.y = y
+    this.width = width
+    this.height = height
+    this.speed = speed
+    this.type = type
+    this.frameX = 0
+    this.frameY = 0
+    this.randomise = Math.floor(Math.random() * 30 + 30)
+    this.carType = Math.floor(Math.random() * typeOfCars)
+    this.turtleType = Math.floor(Math.random() * typeOfTurtles)
+  }
+  draw() {
+    if (this.type === 'turtle') {
+      if (frame % this.randomise === 0) {
+        if (this.frameX &gt;= 1) this.frameX = 0
+        else this.frameX++
+      }
+      ctx1.drawImage(
+        turtle,
+        this.frameX * 70,
+        this.turtleType * 70,
+        70,
+        70,
+        this.x,
+        this.y,
+        this.width,
+        this.height
+      )
+    } else if (this.type === 'log') {
+      ctx1.drawImage(log, this.x, this.y, this.width, this.height)
+    } else {
+      ctx2.drawImage(
+        car,
+        this.frameX * this.width,
+        this.carType * this.height,
+        grid * 2,
+        grid,
+        this.x,
+        this.y,
+        this.width,
+        this.height
+      )
+    }
+  }
+  update() {
+    this.x += this.speed * gameSpeed
+    if (this.speed &gt; 0) {
+      if (this.x &gt; canvas1.width + this.width) {
+        this.x = - this.width
+        this.carType = Math.floor(Math.random() * typeOfCars)
+        this.turtleType = Math.floor(Math.random() * typeOfTurtles)
+      }
+    } else {
+      this.frameX = 1
+      if (this.x &lt; -this.width) {
+        this.x = canvas1.width + this.width
+        this.carType = Math.floor(Math.random() * typeOfCars)
+      }
+    }
+  }
+}
+
+export function initObstacles() {
+  // lane 1
+  for (let i = 0; i &lt; 2; i++) {
+    let x = i * 350
+    carsArray.push(new Obstacle(
+      x,
+      canvas1.height - grid * 2 - 20,
+      grid * 2,
+      grid,
+      1,
+      'car'
+    ))
+  }
+  // lane 2
+  for (let i = 0; i &lt; 2; i++) {
+    let x = i * 300
+    carsArray.push(new Obstacle(
+      x,
+      canvas1.height - grid * 3 - 20,
+      grid * 2,
+      grid,
+      -2,
+      'car'
+    ))
+  }
+  // lane 3
+  for (let i = 0; i &lt; 2; i++) {
+    let x = i * 400
+    carsArray.push(new Obstacle(
+      x,
+      canvas1.height - grid * 4 - 20,
+      grid * 2,
+      grid,
+      2,
+      'car'
+    ))
+  }
+  // lane 4
+  for (let i = 0; i &lt; 2; i++) {
+    let x = i * 400
+    logsArray.push(new Obstacle(
+      x,
+      canvas1.height - grid * 5 - 20,
+      grid * 2,
+      grid,
+      -2,
+      'log'
+    ))
+  }
+  // lane 5
+  for (let i = 0; i &lt; 3; i++) {
+    let x = i * 200
+    logsArray.push(new Obstacle(
+      x,
+      canvas1.height - grid * 6 - 20,
+      grid,
+      grid,
+      1,
+      'turtle'
+    ))
+  }
+}
+
+export function handleObstacles() {
+  for (let i = 0; i &lt; carsArray.length; i++) {
+    carsArray[i].update()
+    carsArray[i].draw()
+  }
+  for (let i = 0; i &lt; logsArray.length; i++) {
+    logsArray[i].update()
+    logsArray[i].draw()
+  }
+  // collision with car
+  for (let i = 0; i &lt; carsArray.length; i++) {
+    if (collision(frogger, carsArray[i])) {
+      ctx4.drawImage(
+        collisions,
+        0,
+        100,
+        100,
+        100,
+        frogger.x,
+        frogger.y,
+        50,
+        50
+      )
+      resetGame()
+    }
+  }
+  // collision with log/turtles
+  if (frogger.y &lt; 250 &amp;&amp; frogger.y &gt; 100) {
+    safe = false
+
+    for (let i = 0; i &lt; logsArray.length; i++) {
+      if (collision(frogger, logsArray[i])) {
+        frogger.x += logsArray[i].speed
+        safe = true
+      }
+    }
+    if (!safe) {
+      for (let i = 0; i &lt; 30; i++) {
+        ripplesArray.unshift(new Particle(frogger.x, frogger.y))
+      }
+      resetGame()
+    }
+  }
+}</code></pre>
+
+    <article class="box-grey">
+      <h4 class="tag-blue" style="margin-left: -10px">Imports</h4>
+      <p>
+        <code>import { canvas1, ctx1, ctx2, ctx4, frame, gameSpeed, collision, resetGame } from ' . . /app.js'</code>:
+        Imports various global variables and functions from <code>app.js</code>.
+        <code>canvas1</code>, <code>ctx1</code> (for logs/turtles), <code>ctx2</code> (for cars), <code>ctx4</code>
+        (for collision effect). <code>frame</code> for timing animations (like turtle animation).
+        <code>gameSpeed</code> to control obstacle movement speed. <code>collision</code> function for checking
+        collisions with frogger. <code>resetGame</code> to call when a collision occurs.
+      </p>
+      <p><code>import { frogger } from ' . . /app.js'</code>: Imports the <code>frogger</code> object itself, needed
+        for collision detection and interaction (e.g., moving with logs).</p>
+      <p><code>import { ripplesArray, Particle } from ' . /particles.js'</code>: Imports <code>ripplesArray</code> and
+        the <code>Particle</code> class from <code>particles.js</code> to create ripple effects if the frog falls in
+        the water.</p>
+    </article>
+
+    <article class="box-grey">
+      <h4 class="tag-blue" style="margin-left: -10px">Global Variables and Constants</h4>
+      <p><code>export const grid = 80</code>: Defines the size of the grid cells in the game. Obstacles and frog
+        movement are often aligned to this grid. <code>export</code> makes it available to other files (like
+        <code>frogger.js</code>).
+      </p>
+      <p><code>const carsArray = [ ]</code> and <code>const logsArray = [ ]</code>: Arrays to store all the car and
+        log/turtle obstacle objects, respectively.</p>
+      <p><code>let typeOfCars = 3</code>: Indicates there are 3 different visual types or rows for cars in their
+        spritesheet.</p>
+      <p><code>let typeOfTurtles = 4</code>: Indicates there are 4 different visual types or rows for turtles in
+        their spritesheet.</p>
+      <p><code>let safe = false</code>: A boolean flag used to check if the frog is safely on a log or turtle when in
+        the water area.</p>
+    </article>
+
+    <article class="box-grey">
+      <h4 class="tag-blue" style="margin-left: -10px">Image Loading</h4>
+      <p><code>const turtle = new Image( )</code> and <code>turtle.src = 'img / turtles.png'</code>: Loads the
+        spritesheet for turtles.</p>
+      <p><code>const log = new Image( )</code> and <code>log.src = 'img / log.png'</code>: Loads the image for logs.
+      </p>
+      <p><code>const car = new Image( )</code> and <code>car.src = 'img / cars.png'</code>: Loads the spritesheet for
+        cars.</p>
+      <p><code>const collisions = new Image( )</code> and <code>collisions.src = 'img / collisions.png'</code>: Loads
+        an image to display a collision effect.</p>
+    </article>
+
+    <article class="box-grey">
+      <h4 class="tag-blue" style="margin-left: -10px">Obstacle Class</h4>
+      <p><code>class Obstacle { ... }</code>: Defines a generic class for all obstacles.</p>
+
+      <p><code>constructor(x, y, width, height, speed, type)</code> Initialises a new obstacle object.</p>
+      <p><code>this.x, this.y, this.width, this.height</code>: Standard properties for position and size.</p>
+      <p><code>this.speed</code>: Speed and direction of the obstacle (negative for left, positive for right).</p>
+      <p><code>this.type</code>: A string like 'car', 'log', or 'turtle' to differentiate obstacle types.</p>
+      <p><code>this.frameX = 0</code> and <code>this.frameY = 0</code>: For sprite animation (mainly for turtles and
+        potentially cars if they had multiple animation frames beyond direction).</p>
+      <p><code>this.randomise = Math.floor(Math.random( ) * 30 + 30)</code>: A random number between 30 and 59. Used
+        to vary the animation speed of turtles (e.g., when they dip underwater).</p>
+      <p><code>this.carType = Math.floor(Math.random( ) * typeOfCars)</code>: Randomly selects a row from the car
+        spritesheet (0, 1, or 2).</p>
+      <p><code>this.turtleType = Math.floor(Math.random( ) * typeOfTurtles)</code>: Randomly selects a row from the
+        turtle spritesheet (0, 1, 2, or 3).</p>
+    </article>
+
+    <article class="box-grey">
+      <h4 class="tag-blue" style="margin-left: -10px">draw( )</h4>
+      <p>This method draws the obstacle on its appropriate canvas.</p>
+      <p><code>if (this.type === 'turtle') { ... }</code>: If the obstacle is a turtle.</p>
+      <p><code>if (frame % this.randomise === 0) { ... }</code>: This condition is true every
+        <code>this.randomise</code> game frames. It's used to animate the turtle (e.g., toggle between two animation
+        frames).
+      </p>
+      <p><code>if (this.frameX >= 1) this.frameX = 0</code> and <code>else this.frameX++</code>: Toggles
+        <code>this.frameX</code> between 0 and 1 for a simple two-frame animation.
+      </p>
+      <p>
+        <code>ctx1.drawImage(turtle, this.frameX * 70, this.turtleType * 70, 70, 70, this.x, this.y, this.width, this.height)</code>:
+        Draws the turtle sprite from its spritesheet onto <code>canvas1</code> (<code>ctx1</code>). It assumes each
+        turtle frame is 70x70 pixels in the spritesheet.
+      </p>
+      <p><code>else if (this.type === 'log') { ... }</code>: If it's a log.</p>
+      <p><code>ctx1.drawImage(log, this.x, this.y, this.width, this.height)</code>: Draws the log image directly onto
+        <code>canvas1</code>.
+      </p>
+      <p><code>else { ... }</code>: If it's a car (the default <code>else</code> case).</p>
+      <p>
+        <code>ctx2.drawImage(car, this.frameX * this.width, this.carType * this.height, grid * 2, grid, this.x, this.y, this.width, this.height)</code>:
+        Draws the car sprite from its spritesheet onto <code>canvas2</code> (<code>ctx2</code>).
+        <code>this.frameX * this.width</code> implies cars might have different horizontal frames for different
+        directions (e.g., <code>this.frameX = 0</code> for right, <code>this.frameX = 1</code> for left).
+        <code>this.carType * this.height</code> selects the car model/color. The source width and height from the
+        spritesheet are assumed to be <code>grid * 2</code> and <code>grid</code>.
+      </p>
+    </article>
+
+    <article class="box-grey">
+      <h4 class="tag-blue" style="margin-left: -10px">update( )</h4>
+      <p>Updates the obstacle's position and handles screen wrapping.</p>
+      <p><code>this.x += this.speed * gameSpeed</code>: Moves the obstacle horizontally. The movement is affected by
+        both its own <code>this.speed</code> and the global <code>gameSpeed</code>.</p>
+      <p><code>if (this.speed &gt; 0) { ... }</code>: If the obstacle is moving to the right.</p>
+      <p><code>if (this.x &gt; canvas1.width + this.width) { ... }</code>: If the obstacle has moved completely off
+        the right edge of the canvas.</p>
+      <p><code>this.x = -this.width;</code>: Reset its x-position to just off the left edge, so it reappears from the
+        left.</p>
+      <p><code>this.carType = Math.floor(Math.random() * typeOfCars)</code> and <code>this.turtleType = ...</code> :
+        Re-randomizes the visual type of the car/turtle when it wraps around (optional, adds variety).</p>
+      <p><code>else { ... }</code> : If the obstacle is moving to the left (<code>this.speed &lt; 0</code>).</p>
+      <p><code>this.frameX = 1</code>: Sets <code>frameX</code> to 1. For cars, this likely selects the left-facing
+        sprite from the car spritesheet if frame 0 is right-facing.</p>
+      <p><code>if (this.x &lt; -this.width) { ... }</code> : If the obstacle has moved completely off the left edge.
+      </p>
+      <p><code>this.x = canvas1.width + this.width</code>: Reset its x-position to just off the right edge.</p>
+      <p><code>this.carType = Math.floor(Math.random( ) * typeOfCars)</code>: Re-randomizes car type.</p>
+
+    </article>
+
+    <article class="box-grey">
+      <h4 class="tag-blue" style="margin-left: -10px">initObstacles( )</h4>
+      <p><code>export function initObstacles( ) { ... }</code> : This function creates all the initial obstacles for
+        the game and adds them to <code>carsArray</code> or <code>logsArray</code>.</p>
+      <p>It has sections for 5 lanes:</p>
+      <p>Lane 1 (bottom-most road lane): Creates 2 cars, positioned at <code>canvas1.height - grid * 2 - 20</code>
+        (y-coordinate), with a speed of 1.</p>
+      <p>Lane 2: Creates 2 cars, y-position <code>canvas1.height - grid * 3 - 20</code>, speed -2 (moving left).</p>
+      <p>Lane 3: Creates 2 cars, y-position <code>canvas1.height - grid * 4 - 20</code>, speed 2.</p>
+      <p>Lane 4 (first water lane): Creates 2 logs, y-position <code>canvas1.height - grid * 5 - 20</code>, speed -2.
+      </p>
+      <p>Lane 5 (second water lane): Creates 3 turtles, y-position <code>canvas1.height - grid * 6 - 20</code>, speed
+        1. Turtles are smaller (<code>grid</code> width instead of <code>grid * 2</code>).</p>
+      <p>The <code>-20</code> in y-coordinates is a small offset for positioning within the lanes.</p>
+    </article>
+
+    <article class="box-grey">
+      <h4 class="tag-blue" style="margin-left: -10px">handleObstacles( )</h4>
+      <p><code>export function handleObstacles( ) { ... }</code>: This function is called in every game frame (from
+        <code>app.js</code>) to manage all obstacles.
+      </p>
+      <p><code>for (let i = 0; i &lt; carsArray.length; i++) { carsArray[i].update( ); carsArray[i].draw( ); }</code>:
+        Loops through all cars in <code>carsArray</code>, calling their <code>update( )</code> and
+        <code>draw( )</code> methods.
+      </p>
+      <p><code>for (let i = 0; i &lt; logsArray.length; i++) { logsArray[i].update( ); logsArray[i].draw( ); }</code>:
+        Does the same for all logs/turtles in <code>logsArray</code>.</p>
+    </article>
+
+    <article class="box-grey">
+      <h4 class="tag-blue" style="margin-left: -10px">Collision with Cars</h4>
+      <p><code>for (let i = 0; i &lt; carsArray.length; i++) { ... }</code>: Loop through cars again for collision
+        detection.</p>
+      <p><code>if (collision(frogger, carsArray[i])) { ... }</code>: Uses the imported <code>collision</code> function
+        to check if the <code>frogger</code> object is colliding with the current car.</p>
+      <p><code>ctx4.drawImage(collisions, 0, 100, 100, 100, frogger.x, frogger.y, 50, 50)</code>: If a collision
+        occurs, draw the <code>collisions</code> image (an explosion/splat effect) at the frogger's position on
+        <code>canvas4</code>. It takes a 100x100 portion from source (0,100) and draws it as 50x50.
+      </p>
+      <p><code>resetGame( )</code>: Calls the function from <code>app.js</code> to reset the game state.</p>
+    </article>
+
+    <article class="box-grey">
+      <h4 class="tag-blue" style="margin-left: -10px">Collision with Logs/Turtles (Water Section)</h4>
+      <p><code>if (frogger.y &lt; 250 && frogger.y &gt; 100) { ... }</code>: Checks if the frogger is within the
+        y-coordinate range of the water lanes (roughly between y=100 and y=250).</p>
+      <p><code>safe = false</code>: Initially assume the frog is not safe (i.e., it's in the water but not on a
+        log/turtle).</p>
+      <p><code>for (let i = 0; i &lt; logsArray.length; i++) { ... }</code>: Loop through all logs and turtles.</p>
+      <p><code>if (collision(frogger, logsArray[i])) { ... }</code>: If the frogger collides with a log or turtle.</p>
+      <p><code>frogger.x += logsArray[i].speed * gameSpeed</code>: The frogger should move along with the log/turtle.
+        Its x-position is updated by the log/turtle's speed (also considering global <code>gameSpeed</code>).</p>
+      <p><code>safe = true</code>: Set the flag to true, indicating the frog is safe on this object.</p>
+      <p><code>if (!safe) { ... }</code>: After checking all logs/turtles, if <code>safe</code> is still
+        <code>false</code> (meaning the frog is in the water area but not on any safe object).
+      </p>
+      <p><code>for (let i = 0; i &lt; 30; i++) { ripplesArray.unshift(new Particle(frogger.x, frogger.y)) }</code>:
+        The frog has fallen into the water. Create 30 new <code>Particle</code> objects (which will be styled as
+        ripples) at the frog's current position and add them to the <code>ripplesArray</code>.</p>
+      <p><code>resetGame( )</code>: Reset the game because the frog drowned.</p>
+    </article>
+  </section>
+
+  <section class="section">
+    <h2>4. Particles ( ./scripts/particles.js )</h2>
+    <p>This file defines a <code>Particle</code> class and functions to handle visual effects like dust when the
+      frog moves on land, and ripples when it's in the water.</p>
+    <pre>
+<code class="language-js">import { ctx1, ctx3, keys } from '../app.js'
+import { frogger } from '../app.js'
+
+const particlesArray = []
+const maxParticles = 300
+export const ripplesArray = []
+
+export class Particle {
+  constructor(x, y) {
+    this.x = x + 25
+    this.y = y + 25
+    this.radius = Math.random() * 20 + 1
+    this.opacity = 1
+    this.directionX = Math.random() - 0.5
+    this.directionY = Math.random() - 0.5
+  }
+  update() {
+    this.x += this.directionX
+    this.y += this.directionY
+    if (this.opacity &gt; 0.1) {
+      this.opacity -= 0.9
+    }
+    if (this.radius &gt; 0.15) {
+      this.radius -= 0.14
+    }
+  }
+  draw() {
+    ctx3.fillStyle = `rgb(150 150 150 / ${this.opacity})`
+    ctx3.beginPath()
+    ctx3.arc(this.x, this.y, this.radius, 0, Math.PI * 2)
+    ctx3.fill()
+    ctx3.closePath()
+  }
+  ripple() {
+    if (this.radius &lt; 50) {
+      this.radius += 0.7
+      this.x -= 0.03
+      this.y -= 0.03
+    }
+    if (this.opacity &gt; 0) {
+      this.opacity -= 0.02
+    }
+  }
+  drawRipple() {
+    ctx1.strokeStyle = `rgb(255 255 255 / ${this.opacity})`
+    ctx1.beginPath()
+    ctx1.arc(this.x, this.y, this.radius, 0, Math.PI * 2)
+    ctx1.stroke()
+    ctx1.closePath()
+  }
+}
+
+export function handleParticles() {
+  // dust
+  for (let i = 0; i &lt; particlesArray.length; i++) {
+    particlesArray[i].update()
+    particlesArray[i].draw()
+  }
+  if (particlesArray.length &gt; maxParticles) {
+    for (let i = 0; i &lt; 30; i++) {
+      particlesArray.pop()
+    }
+  }
+  if (
+    keys.length &gt; 0 &amp;&amp; frogger.y &gt; 250 &amp;&amp;
+    particlesArray.length &lt; maxParticles + 10
+  ) {
+    for (let i = 0; i &lt; 10; i++) {
+      particlesArray.unshift(new Particle(frogger.x, frogger.y))
+    }
+  }
+}
+
+export function handleRipples() {
+  for (let i = 0; i &lt; ripplesArray.length; i++) {
+    ripplesArray[i].ripple()
+    ripplesArray[i].drawRipple()
+  }
+  if (ripplesArray.length &gt; 20) {
+    for (let i = 0; i &lt; 5; i++) {
+      ripplesArray.pop()
+    }
+  }
+  if (keys.length &gt; 0 &amp;&amp; frogger.y &lt; 250 &amp;&amp; frogger.y &gt; 100) {
+    for (let i = 0; i &lt; 20; i++) {
+      ripplesArray.unshift(new Particle(frogger.x, frogger.y))
+    }
+  }
+}</code></pre>
+
+    <article class="box-grey">
+      <h4 class="tag-blue" style="margin-left: -10px">Imports</h4>
+      <p><code>import { ctx1, ctx3, keys } from ' . . /app.js'</code>: Imports drawing contexts (<code>ctx1</code> for
+        ripples, <code>ctx3</code> for dust) and the <code>keys</code> array from <code>app.js</code>.
+        <code>keys</code> is used to trigger particle creation when movement keys are pressed.
+      </p>
+      <p><code>import { frogger } from ' . . /app.js'</code>: Imports the <code>frogger</code> object to get its
+        position for creating particles.</p>
+    </article>
+
+    <article class="box-grey">
+      <h4 class="tag-blue" style="margin-left: -10px">Global Variables</h4>
+      <p><code>const particlesArray = [ ]</code>: An array to store all active dust particle objects.</p>
+      <p><code>const maxParticles = 300</code>: The maximum number of dust particles allowed on screen at once to
+        prevent performance issues.</p>
+      <p><code>export const ripplesArray = [ ]</code>: An array to store active water ripple particle objects.
+        <code>export</code> makes it accessible from <code>obstacles.js</code> when the frog falls in water.
+      </p>
+    </article>
+
+    <article class="box-grey">
+      <h4 class="tag-blue" style="margin-left: -10px">Particle Class</h4>
+      <p><code>export class Particle { ... }</code>: Defines a class for individual particles. This class is versatile
+        and will be used for both dust and ripples, with different methods controlling their behavior and appearance.
+      </p>
+    </article>
+
+    <article class="box-grey">
+      <h4 class="tag-blue" style="margin-left: -10px">constructor(x, y)</h4>
+      <p>Initialises a new particle.</p>
+      <p><code>this.x = x + 25</code> and <code>this.y = y + 25</code>: Sets the particle's initial position. It's
+        based on the passed <code>x, y</code> (likely frogger's position) with an offset of +25. This might be to
+        center the particle effect around the frog's center, assuming frogger's origin is top-left and it's 50x50.</p>
+      <p><code>this.radius = Math.random( ) * 20 + 1</code>: Sets a random initial radius for the particle, between 1
+        and 21. This creates variation in particle size.</p>
+      <p><code>this.opacity = 1</code>: Sets initial opacity to 1 (fully opaque).</p>
+      <p><code>this.directionX = Math.random( ) * 1 - 0.5</code> and
+        <code>this.directionY = Math.random( ) * 1 - 0.5</code>: Sets a random small horizontal and vertical
+        direction/speed. <code>Math.random( )</code> gives 0 to &lt; 1, so <code>Math.random( ) * 1 - 0.5</code> gives
+        -0.5 to &lt; 0.5.
+      </p>
+    </article>
+
+    <article class="box-grey">
+      <h4 class="tag-blue" style="margin-left: -10px">update( ) for Dust Particles</h4>
+      <p>This method updates the state of a dust particle over time.</p>
+      <p><code>this.x += this.directionX</code> and <code>this.y += this.directionY</code>: Moves the particle
+        according to its direction vectors.</p>
+      <p><code>if (this.opacity &gt; 0.1) { this.opacity -= 0.9 }</code>: Rapidly decreases the particle's
+        opacity. If it's above 0.1, it subtracts 0.9, meaning it will become nearly transparent very quickly
+        (likely in one or two frames).</p>
+      <p><code>if (this.radius &gt; 0.15) { this.radius -= 0.14 }</code>: Decreases the particle's radius, making
+        it shrink. It ensures the radius doesn't go below 0.15.</p>
+    </article>
+
+    <article class="box-grey">
+      <h4 class="tag-blue" style="margin-left: -10px">draw( ) for Dust Particles</h4>
+      <p>This method draws a dust particle on <code>ctx3</code> (the frog's canvas).</p>
+      <p><code>ctx3.fillStyle = rgb(150 150 150 / ${this.opacity})</code>: Sets the fill color to a
+        semi-transparent grey. The <code>${this.opacity}</code> dynamically changes the alpha (transparency) of
+        the color.</p>
+      <p><code>ctx3.beginPath( )</code>: Starts a new drawing path.</p>
+      <p><code>ctx3.arc(this.x, this.y, this.radius, 0, Math.PI * 2)</code>: Defines a circular arc path
+        centered at <code>(this.x, this.y)</code> with <code>this.radius</code>. <code>0</code> and
+        <code>Math.PI * 2</code> define a full circle.
+      </p>
+      <p><code>ctx3.fill( )</code>: Fills the circular path with the current <code>fillStyle</code>.</p>
+      <p><code>ctx3.closePath( )</code>: Closes the current path (optional for filled shapes but good practice).
+      </p>
+    </article>
+
+    <article class="box-grey">
+      <h4 class="tag-blue" style="margin-left: -10px">ripple( ) for Water Ripples</h4>
+      <p>This method updates the state of a water ripple particle.</p>
+      <p><code>if (this.radius &lt; 50) { ... }</code>: If the ripple's radius is less than 50 (a max size for
+        ripples).</p>
+      <p><code>this.radius += 0.7</code>: Increases the radius, making the ripple expand.</p>
+      <p><code>this.x -= 0.03; this.y -= 0.03</code>: Slightly adjusts the ripple's center position as it
+        expands (a subtle effect, possibly to make it look like it's emanating from a point).</p>
+      <p><code>if (this.opacity &gt; 0) { this.opacity -= 0.02 }</code>: Slowly decreases the opacity, making the
+        ripple fade out over time.</p>
+    </article>
+
+    <article class="box-grey">
+      <h4 class="tag-blue" style="margin-left: -10px">drawRipple( ) for Water Ripples</h4>
+      <p>This method draws a water ripple on <code>ctx1</code> (the canvas for logs/turtles and water effects).
+      </p>
+      <p><code>ctx1.strokeStyle = rgb(255 255 255 / ${this.opacity})</code>: Sets the stroke color to
+        semi-transparent white for the ripple outline.</p>
+      <p><code>ctx1.beginPath( )</code>, <code>ctx1.arc(...)</code>, <code>ctx1.closePath( )</code>: Similar to
+        dust particles, defines a circular path.</p>
+      <p><code>ctx1.stroke( )</code>: Draws the outline of the circular path (doesn't fill it).</p>
+    </article>
+
+    <article class="box-grey">
+      <h4 class="tag-blue" style="margin-left: -10px">handleParticles( ) for Dust</h4>
+      <p><code>export function handleParticles( ) { ... }</code>: Manages the array of dust particles.</p>
+      <p>
+        <code>for (let i = 0; i &lt; particlesArray.length; i++) { particlesArray[i].update( ); particlesArray[i].draw( ); }</code>:
+        Loops through all dust particles, updating and drawing each one.
+      </p>
+      <p><code>if (particlesArray.length &gt; maxParticles) { ... }</code>: If the number of particles exceeds
+        <code>maxParticles</code>.
+      </p>
+      <p><code>for (let i = 0; i &lt; 30; i++) { particlesArray.pop( ) }</code>: Removes the 30 oldest particles
+        from the end of the array. <code>pop( )</code> removes the last element.</p>
+      <p>
+        <code>if (keys.length &gt; 0 && frogger.y &gt; 250 && particlesArray.length &lt; maxParticles + 10) { ... }</code>:
+        This condition checks if:<br>
+        1. Any movement key is currently pressed (<code>keys.length &gt; 0</code>).<br>
+        2. The frogger is on land (<code>frogger.y &gt; 250</code>; y-coordinates for water are lower).<br>
+        3. The particle count is below a threshold (<code>maxParticles + 10</code>, allowing a small burst over
+        the limit temporarily).
+      </p>
+      <p><code>for (let i = 0; i &lt; 10; i++) { particlesArray.unshift(new Particle(frogger.x, frogger.y)) }</code>:
+        If conditions are met, create 10 new dust particles at the frogger's current position and add them to
+        the beginning of <code>particlesArray</code> using <code>unshift( )</code>.</p>
+    </article>
+
+    <article class="box-grey">
+      <h4 class="tag-blue" style="margin-left: -10px">handleRipples( ) for Water</h4>
+      <p><code>export function handleRipples(  { ... }</code>: Manages the array of water ripple particles.</p>
+      <p>
+        <code>for (let i = 0; i &lt; ripplesArray.length; i++) { ripplesArray[i].ripple( ); ripplesArray[i].drawRipple( ); }</code>:
+        Loops through all ripples, calling their specific <code>ripple( )</code> update method and
+        <code>drawRipple( )</code> drawing method.
+      </p>
+      <p><code>if (ripplesArray.length &gt; 20) { ... }</code>: If there are more than 20 ripples.</p>
+      <p><code>for (let i = 0; i &lt; 5; i++) { ripplesArray.pop( ) }</code>: Remove the 5 oldest ripples.</p>
+      <p><code>if (keys.length &gt; 0 && frogger.y &lt; 250 && frogger.y &gt; 100) { ... }</code>:
+        This condition checks if:<br>
+        1. Any movement key is pressed.<br>
+        2. The frogger is in the water area (<code>frogger.y &lt; 250 && frogger.y &gt; 100</code>).</p>
+      <p><code>for (let i = 0; i &lt; 20; i++) { ripplesArray.unshift(new Particle(frogger.x, frogger.y)) }</code>:
+        If conditions are met (frog is moving in water), create 20 new ripple particles at the frogger's position.</p>
+    </article>
+  </section>
+</body>
+
+</html>
