@@ -68,10 +68,10 @@ const updateTurn = dt => {
   if (stick.rot <= 90) return
 
   stick.rot = 90
-  const [next, perfect] = hit()
+  const [next, perfect, crossed] = hit()
 
   if (next) {
-    st.score += perfect ? 2 : 1
+    st.score += crossed * (perfect ? 2 : 1)
     el.score.textContent = `${st.score}`
 
     if (perfect) {
@@ -81,9 +81,11 @@ const updateTurn = dt => {
       }, 1000)
     }
 
-    addPlatform()
-    addTree()
-    addTree()
+    for (let i = 0; i < crossed; i++) {
+      addPlatform()
+      addTree()
+      addTree()
+    }
   }
 
   st.phase = phase.walk

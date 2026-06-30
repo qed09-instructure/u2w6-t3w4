@@ -50,13 +50,16 @@ export const hit = () => {
 
   const farX = stick.x + stick.len
   const target = st.platforms.find(({ x, w }) => x < farX && farX < x + w)
+  const crossed = target
+    ? st.platforms.filter(({ x }) => stick.x < x && x <= target.x).length
+    : 0
   const perfect = Boolean(
     target &&
       target.x + target.w / 2 - g.perfect / 2 < farX &&
       farX < target.x + target.w / 2 + g.perfect / 2
   )
 
-  return /** @type {[ReturnType<typeof makePlatform> | undefined, boolean]} */ (
-    [target, perfect]
+  return /** @type {[ReturnType<typeof makePlatform> | undefined, boolean, number]} */ (
+    [target, perfect, crossed]
   )
 }
