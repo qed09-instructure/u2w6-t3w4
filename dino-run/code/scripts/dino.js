@@ -3,7 +3,8 @@ import { getCss, incCss, setCss } from "dino-css"
 const dino = /** @type {HTMLImageElement} */ (
   document.querySelector("[data-dino]")
 )
-const JUMP = { speed: 0.45, gravity: 0.0015, fastDrop: 2.5 }
+const JUMP = { speed: 2.8, gravity: 0.0093, fastDrop: 2.5 }
+const JUMP_SOUND = { frequency: 650, duration: 0.15, volume: 0.1 }
 const IDLE_FRAME = "dino-stationary.svg"
 const HIT_FRAME = "dino-hit.svg"
 const RUN = {
@@ -23,14 +24,13 @@ let activeAnimation = RUN
 let frame = 0
 let frameMs = 0
 let yVel = 0
+/** @type {AudioContext | null} */
+let audioCtx = null
 
 export const setupDino = () => {
-  jumping = false
-  ducking = false
+  jumping = ducking = false
   activeAnimation = RUN
-  frame = 0
-  frameMs = 0
-  yVel = 0
+  frame = frameMs = yVel = 0
   setCss(dino, "--bottom", 0)
   dino.classList.remove("ducking")
   dino.src = `img/${IDLE_FRAME}`
@@ -133,11 +133,41 @@ const handleKeyUp = e => {
 const jump = () => {
   if (jumping || ducking) return
 
-  const { speed } = JUMP
-  yVel = speed
+  yVel = JUMP.speed
   jumping = true
   frame = 0
   frameMs = 0
+  playJumpSound()
+}
+
+const playJumpSound = () => {
+  const ctx = getAudioContext()
+
+  if (ctx.state === "suspended") {
+    void ctx.resume()
+  }
+
+  const now = ctx.currentTime
+  const oscillator = ctx.createOscillator()
+  const gain = ctx.createGain()
+  const { frequency, duration, volume } = JUMP_SOUND
+  const end = now + duration
+
+  oscillator.type = "square"
+  oscillator.frequency.setValueAtTime(frequency, now)
+  oscillator.frequency.exponentialRampToValueAtTime(frequency * 0.75, end)
+  gain.gain.setValueAtTime(0.0001, now)
+  gain.gain.exponentialRampToValueAtTime(volume, now + 0.01)
+  gain.gain.exponentialRampToValueAtTime(0.0001, end)
+
+  oscillator.connect(gain)
+  gain.connect(ctx.destination)
+  oscillator.start(now)
+  oscillator.stop(end)
+}
+
+const getAudioContext = () => {
+  return audioCtx ??= new AudioContext()
 }
 
 const removeControls = () => {

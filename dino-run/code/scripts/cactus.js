@@ -1,6 +1,7 @@
 import { getCss, incCss, setCss } from "dino-css"
 
-const SPEED = 0.05
+const SPEED = 1.15
+const REMOVE_LEFT = -520
 const INTERVAL = { min: 700, max: 1800 }
 const PTERODACTYL_SCORE = 150
 const PTERODACTYL_FRAME_MS = 180
@@ -8,17 +9,14 @@ const PTERODACTYL_FRAMES = [
   "pterodactyl-0.svg",
   "pterodactyl-1.svg"
 ]
-const PTERODACTYL_BOTTOMS = [18, 18, 18, 23, 30]
+const PTERODACTYL_BOTTOMS = [100, 120, 140, 160]
 const CACTUS_ASSETS = [
-  { src: "cactus-single-small.svg", height: 19 },
-  { src: "cactus-single-medium.svg", height: 22 },
-  { src: "cactus-single-large.svg", height: 26 },
-  { src: "cactus-pair-small.svg", height: 20 },
-  { src: "cactus-pair-medium.svg", height: 23 },
-  { src: "cactus-pair-large.svg", height: 26 },
-  { src: "cactus-triple-medium.svg", height: 23 },
-  { src: "cactus-triple-large.svg", height: 26 },
-  { src: "cactus-cluster-mixed.svg", height: 27 }
+  { src: "cactus-single-small.svg", height: 119 },
+  { src: "cactus-single-large.svg", height: 170 },
+  { src: "cactus-pair-small.svg", height: 119 },
+  { src: "cactus-pair-large.svg", height: 170 },
+  { src: "cactus-triple-small.svg", height: 119 },
+  { src: "cactus-four-large.svg", height: 170 }
 ]
 const world = /** @type {HTMLElement} */ (document.querySelector("[data-world]"))
 
@@ -27,32 +25,27 @@ let pterodactylFrame = 0
 let pterodactylFrameMs = 0
 
 const obstacles = () =>
-  /** @type {NodeListOf<HTMLElement>} */ (
-    document.querySelectorAll("[data-obstacle]")
-  )
+  /** @type {NodeListOf<HTMLElement>} */(
+  document.querySelectorAll("[data-obstacle]")
+)
 
 const pterodactyls = () =>
-  /** @type {NodeListOf<HTMLImageElement>} */ (
-    document.querySelectorAll("[data-pterodactyl]")
-  )
-
-/** @type {(...els: Element[]) => void} */
-const removeEls = (...els) => {
-  els.forEach(el => el.remove())
-}
+  /** @type {NodeListOf<HTMLImageElement>} */(
+  document.querySelectorAll("[data-pterodactyl]")
+)
 
 export const setupCactus = () => {
   nextMs = INTERVAL.min
   pterodactylFrame = 0
   pterodactylFrameMs = 0
-  removeEls(...obstacles())
+  obstacles().forEach(obstacle => obstacle.remove())
 }
 
 /** @type {(dt: number, spd: number, score?: number) => void} */
 export const updateCactus = (dt, spd, score = 0) => {
   obstacles().forEach(obstacle => {
     incCss(obstacle, "--left", dt * spd * SPEED * -1)
-    if (getCss(obstacle, "--left") <= -20) {
+    if (getCss(obstacle, "--left") <= REMOVE_LEFT) {
       obstacle.remove()
     }
   })
@@ -72,8 +65,7 @@ export const getCactusRects = () =>
 
 /** @type {(score: number) => void} */
 const createObstacle = score => {
-  const canFly = score >= PTERODACTYL_SCORE
-  if (canFly && Math.random() < 0.35) {
+  if (score >= PTERODACTYL_SCORE && Math.random() < 0.35) {
     createPterodactyl()
     return
   }
@@ -84,31 +76,34 @@ const createObstacle = score => {
 /** @type {() => void} */
 const createCactus = () => {
   const asset = randomItem(CACTUS_ASSETS)
-  const cactus = document.createElement("img")
-
-  cactus.dataset.obstacle = "true"
-  cactus.dataset.cactus = "true"
-  cactus.src = `img/${asset.src}`
-  cactus.alt = ""
-  cactus.classList.add("obstacle", "cactus")
-  setCss(cactus, "--left", 100)
+  const cactus = createObstacleImage("cactus", asset.src)
   setCss(cactus, "--height", asset.height)
-
   world.append(cactus)
 }
 
 /** @type {() => void} */
 const createPterodactyl = () => {
-  const pterodactyl = document.createElement("img")
-  pterodactyl.dataset.obstacle = "true"
-  pterodactyl.dataset.pterodactyl = "true"
-  pterodactyl.src = `img/${PTERODACTYL_FRAMES[pterodactylFrame]}`
-  pterodactyl.classList.add("obstacle", "pterodactyl")
-  pterodactyl.alt = ""
-  setCss(pterodactyl, "--left", 100)
+  const pterodactyl = createObstacleImage(
+    "pterodactyl",
+    PTERODACTYL_FRAMES[pterodactylFrame]
+  )
   setCss(pterodactyl, "--bottom", randomItem(PTERODACTYL_BOTTOMS))
   world.append(pterodactyl)
 }
+
+/** @type {(type: string, src: string) => HTMLImageElement} */
+const createObstacleImage = (type, src) => {
+  const img = document.createElement("img")
+  img.dataset.obstacle = "true"
+  img.dataset[type] = "true"
+  img.src = `img/${src}`
+  img.alt = ""
+  img.classList.add("obstacle", type)
+  setCss(img, "--left", getSpawnLeft())
+  return img
+}
+
+const getSpawnLeft = () => Math.ceil(world.getBoundingClientRect().width)
 
 /** @type {(dt: number, spd: number) => void} */
 const animatePterodactyls = (dt, spd) => {
@@ -148,11 +143,8 @@ const shrinkRect = (rect, left, top, right, bottom) => {
 }
 
 /** @type {(min: number, max: number) => number} */
-const randomInt = (min, max) => {
-  return Math.floor(Math.random() * (max - min + 1) + min)
-}
+const randomInt = (min, max) =>
+  Math.floor(Math.random() * (max - min + 1) + min)
 
 /** @template T @param {T[]} items @returns {T} */
-const randomItem = items => {
-  return items[randomInt(0, items.length - 1)]
-}
+const randomItem = items => items[randomInt(0, items.length - 1)]

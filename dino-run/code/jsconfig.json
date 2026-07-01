@@ -4,7 +4,9 @@
     "target": "ESNext",
     "module": "Preserve",
     "paths": {
-      "dino-*": ["./scripts/*.js"]
+      "dino-*": [
+        "./scripts/*.js"
+      ]
     }
   }
 }

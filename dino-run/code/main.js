@@ -2,13 +2,11 @@ import { getCactusRects, setupCactus, updateCactus } from "dino-cactus"
 import { getDinoRect, setDinoLose, setupDino, updateDino } from "dino-dino"
 import { setupGround, updateGround } from "dino-ground"
 
-const WORLD = { w: 100, h: 30 }
 const SPEED_SCALE_INCREASE = 0.000012
 const SCORE_SPEED = 0.01
 const HIGH_SCORE_KEY = "dino-run-high-score"
 const START_KEYS = new Set(["ArrowUp", "Space"])
 
-const world = /** @type {HTMLElement} */ (document.querySelector("[data-world]"))
 const scoreEl = /** @type {HTMLElement} */ (
   document.querySelector("[data-score]")
 )
@@ -56,14 +54,11 @@ const checkLose = () => {
 const isCollision = (
   { left: leftA, top: topA, right: rightA, bottom: bottomA },
   { left: leftB, top: topB, right: rightB, bottom: bottomB }
-) => {
-  return (
-    leftA < rightB &&
-    topA < bottomB &&
-    rightA > leftB &&
-    bottomA > topB
-  )
-}
+) =>
+  leftA < rightB &&
+  topA < bottomB &&
+  rightA > leftB &&
+  bottomA > topB
 
 /** @type {(dt: number) => void} */
 const updateSpeedScale = dt => {
@@ -104,7 +99,7 @@ const handleLose = () => {
   setDinoLose()
   if (score > highScore) {
     highScore = score
-    saveHighScore(highScore)
+    saveHighScore(score)
   }
   renderScore()
   start.textContent = "GAME OVER\nUp/Space To Restart - Down To Duck"
@@ -112,14 +107,6 @@ const handleLose = () => {
     addStartListeners()
     start.classList.remove("hide")
   }, 250)
-}
-
-const setPixelToWorldScale = () => {
-  const { w, h } = WORLD
-  const worldToPixelScale = Math.min(window.innerWidth / w, window.innerHeight / h)
-
-  world.style.width = `${w * worldToPixelScale}px`
-  world.style.height = `${h * worldToPixelScale}px`
 }
 
 /** @type {(e: KeyboardEvent | TouchEvent) => void} */
@@ -140,9 +127,7 @@ const removeStartListeners = () => {
 }
 
 /** @type {(value: number) => string} */
-const formatScore = value => {
-  return `${Math.floor(value)}`.padStart(5, "0")
-}
+const formatScore = value => `${Math.floor(value)}`.padStart(5, "0")
 
 const renderScore = () => {
   scoreEl.textContent =
@@ -153,8 +138,10 @@ const renderScore = () => {
 
 const loadHighScore = () => {
   try {
-    const stored = window.localStorage.getItem(HIGH_SCORE_KEY)
-    return Number.parseInt(stored ?? "0", 10) || 0
+    return Number.parseInt(
+      window.localStorage.getItem(HIGH_SCORE_KEY) ?? "0",
+      10
+    ) || 0
   } catch {
     return 0
   }
@@ -169,9 +156,8 @@ const saveHighScore = value => {
   }
 }
 
-setPixelToWorldScale()
-window.addEventListener("resize", setPixelToWorldScale)
 start.textContent = "Up/Space To Start - Down To Duck"
+setupGround()
 highScore = loadHighScore()
 renderScore()
 addStartListeners()

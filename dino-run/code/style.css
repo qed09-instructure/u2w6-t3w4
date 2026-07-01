@@ -1,4 +1,18 @@
-*, *::before, *::after {
+:root {
+  --bg: #202124;
+  --fg: #ACACAC;
+  --floor-offset: 29;
+  --world-height: 618px;
+  --ground-width: 4389px;
+  --ground-height: 111px;
+  --dino-height: 159px;
+  --dino-duck-height: 102px;
+  --pterodactyl-height: 119px;
+}
+
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   user-select: none;
 }
@@ -10,29 +24,42 @@ body {
   align-items: center;
   min-height: 100vh;
   overflow: hidden;
-  color: #ACACAC;
-  background: #202124;
+  color: var(--fg);
+  background: var(--bg);
   font-family: "Courier New", monospace;
 }
 
 .world {
-  --floor-offset: 9;
   overflow: hidden;
   position: relative;
+  width: 100vw;
+  height: var(--world-height);
   image-rendering: pixelated;
-  background: #202124;
+  background: var(--bg);
+}
+
+.score,
+.start-screen,
+.ground,
+.dino,
+.obstacle {
+  position: absolute;
+}
+
+.ground,
+.dino,
+.obstacle {
+  image-rendering: pixelated;
 }
 
 .score {
-  position: absolute;
-  font-size: 3vmin;
-  right: 1vmin;
-  top: 1vmin;
+  font-size: 28px;
+  right: 16px;
+  top: 16px;
 }
 
 .start-screen {
-  position: absolute;
-  font-size: 4vmin;
+  font-size: 34px;
   font-weight: bold;
   line-height: 1.25;
   text-align: center;
@@ -47,44 +74,40 @@ body {
   display: none;
 }
 
-.ground {
+.ground,
+.obstacle {
   --left: 0;
-  position: absolute;
-  width: 300%;
+  left: calc(var(--left) * 1px);
+}
+
+.dino,
+.obstacle {
+  --bottom: 0;
+  bottom: calc((var(--bottom) + var(--floor-offset)) * 1px);
+}
+
+.ground {
+  width: var(--ground-width);
+  height: var(--ground-height);
   bottom: 0;
-  left: calc(var(--left) * 1%);
 }
 
 .dino {
-  --bottom: 0;
-  position: absolute;
-  left: 1%;
-  height: 30%;
-  bottom: calc((var(--bottom) + var(--floor-offset)) * 1%);
-  image-rendering: pixelated;
+  left: 56px;
+  height: var(--dino-height);
 }
 
 .dino.ducking {
-  height: 18%;
-}
-
-.obstacle {
-  --left: 0;
-  --bottom: 0;
-  position: absolute;
-  left: calc(var(--left) * 1%);
-  bottom: calc((var(--bottom) + var(--floor-offset)) * 1%);
-  image-rendering: pixelated;
+  height: var(--dino-duck-height);
 }
 
 .cactus {
-  --height: 30;
-  height: calc(var(--height) * 1%);
-  width: auto;
+  --height: 170;
+  height: calc(var(--height) * 1px);
 }
 
 .pterodactyl {
-  height: 15%;
+  height: var(--pterodactyl-height);
 }
 
 .score.flash {
